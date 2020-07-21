@@ -18,7 +18,8 @@ public class Dice {
 			List<Integer> rarray = roll(1,100);
 			int rint = rarray.get(0);
 			String success = check(rint, target);
-			String result = player + "，投掷 " + rarray.toString() + " 结果为" + rint + "," + success;
+			String result = player + "，投掷 " + paras[0] +
+					" 结果为" + rarray.toString() + "," + success;
 			return new Dice(result);
 		}
 	}
