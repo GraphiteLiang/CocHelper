@@ -1,21 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 	<meta charset="UTF-8">
 	<title>Enjoy your game!</title>
 </head>
 <body>
-	<textarea rows="20" cols="10">这是kp界面</textarea>
-	<div>
-    <div>
-        <button id="connect" onclick="connect();">连接</button>
-        <button id="disconnect" disabled="disabled" onclick="disconnect();">断开连接</button>
+<textarea rows="20" cols="10">这是kp界面</textarea>
+<label>欢迎来到kp管理界面</label>
+<input type="text" id="roomname" />
+<button id="create" onclick="create();">创建房间</button>
+<div>
+    <div id="priavteroll">
+    	<label>kp暗骰</label>
+    	<button id="ro" onclick="proll();">roll点</button>
+    	<label>骰子参数</label><input type="text" id="para" />
+    	<ul id="dice"></ul>
     </div>
-    <div id="conversationDiv">
-        <label>输入你的名字</label><input type="text" id="name" />
-        <button id="sendName" onclick="sendName();">发送</button>
-        <p id="response"></p>
+    <div id="rolldiv">
+    	<label>此处掷骰</label>
+    	<button id="ro" onclick="roll();">roll点</button>
+    	<label>骰子参数</label><input type="text" id="para" />
+    	<label>输入npc名字</label><input type="text" id="name" />
+    	<ul id="dice"></ul>
     </div>
 </div>
+<script th:src="@{sockjs.min.js}"></script>
+<script th:src="@{stomp.min.js}"></script>
+<script th:src="@{jquery.js}"></script>
+<script type="text/javascript">
+	function roll(){
+		var para = $('#para').val();
+		var name = $('#name').val();
+		stompClient.send("/roll", {},JSON.stringify({'para':para, 'name':name}));
+	}
+</script>
 </body>
 </html>

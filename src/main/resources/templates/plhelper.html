@@ -11,6 +11,11 @@
         <button id="connect" onclick="connect();">连接</button>
         <button id="disconnect" disabled="disabled" onclick="disconnect();">断开连接</button>
     </div>
+    <div>
+    	<input id="roomname" type="text"/>
+    	<button id="connect" onclick="connectRoom();">进入房间</button>
+        <button id="disconnect" disabled="disabled" onclick="disconnectRoom();">断开连接</button>
+    </div>
     <div id="rolldiv">
     	<label>此处掷骰</label>
     	<button id="ro" onclick="roll();">roll点</button>
@@ -21,7 +26,7 @@
     <div id="makecard">
     	<label>此处车卡，roll5选1</label>
     	<button id="coc" onclick="coc();">roll点</button>
-    	<p id="result">此处结果\n</p>
+    	<p id="result"></p>
     </div>
     <div id="character">
     	<label>建立你的人物卡</label>
@@ -75,6 +80,18 @@
             });
         });
     }
+    function connectRoom() {
+        var socket = new SockJS('/endpointWisely'); //1
+        var roomname = $('#roomname').val();
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function(frame) {
+            setConnected(true);
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/'+roomname, function(response){
+            	getRollResult(JSON.parse(response.body).result);
+            });
+        });
+    }
 	
 	
     function disconnect() {
@@ -92,13 +109,11 @@
     function getRollResult(dice){
     	var response = $('#dice');
     	var liobj = document.createElement('li');
-    	if(response.children().length>=5){
-    		for(var i = 0; i < response.length; i++){
-    			response.children().remove(i);
-    		}
+    	if(response.children().length>=10){
+    		response.children().last().remove();
     	}
     	liobj.innerHTML = dice;
-    	response.append(liobj);
+    	response.prepend(liobj);
     }
     function addweapon(){
     	var w = $('#weapon');

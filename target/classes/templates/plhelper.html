@@ -11,6 +11,11 @@
         <button id="connect" onclick="connect();">连接</button>
         <button id="disconnect" disabled="disabled" onclick="disconnect();">断开连接</button>
     </div>
+    <div>
+    	<input id="roomname" type="text"/>
+    	<button id="connect" onclick="connectRoom();">进入房间</button>
+        <button id="disconnect" disabled="disabled" onclick="disconnectRoom();">断开连接</button>
+    </div>
     <div id="rolldiv">
     	<label>此处掷骰</label>
     	<button id="ro" onclick="roll();">roll点</button>
@@ -21,8 +26,35 @@
     <div id="makecard">
     	<label>此处车卡，roll5选1</label>
     	<button id="coc" onclick="coc();">roll点</button>
-    	<p id="result">此处结果\n</p>
+    	<p id="result"></p>
     </div>
+    <div id="character">
+    	<label>建立你的人物卡</label>
+    	<div id="cproperty">
+    		<label>力量</label><input type="text" id="STR" />
+    		<label>体质</label><input type="text" id="CON" />
+    		<label>体型</label><input type="text" id="SIZ" />
+    		<label>敏捷</label><input type="text" id="DEX" />
+    		<label>外貌</label><input type="text" id="APP" />
+    		<label>智力</label><input type="text" id="INT" />
+    		<label>意志</label><input type="text" id="POW" />
+    		<label>教育</label><input type="text" id="EDU" />
+    		<label>幸运</label><input type="text" id="LUC" />
+    	</div>
+    	<div id="cskill">
+    		<!-- 此处排版所有的coc技能 -->
+    	</div>
+    	<div id="fight">
+    		<label>武器</label><input type="text" id="weapon" />
+    		<button id="getweapon" onclick="addweapon();">添加武器</button>
+    		<ul id="weapons">
+    			
+    		</ul>
+    	</div>
+    	<button id="confirm" onclick="save();">保存人物</button>
+    </div>	
+    
+    
 </div>
 <script th:src="@{sockjs.min.js}"></script>
 <script th:src="@{stomp.min.js}"></script>
@@ -48,6 +80,18 @@
             });
         });
     }
+    function connectRoom() {
+        var socket = new SockJS('/endpointWisely'); //1
+        var roomname = $('#roomname').val();
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function(frame) {
+            setConnected(true);
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/'+roomname, function(response){
+            	getRollResult(JSON.parse(response.body).result);
+            });
+        });
+    }
 	
 	
     function disconnect() {
@@ -65,13 +109,43 @@
     function getRollResult(dice){
     	var response = $('#dice');
     	var liobj = document.createElement('li');
-    	if(response.children().length>=5){
-    		for(var i = 0; i < response.length; i++){
-    			response.children().remove(i);
-    		}
+    	if(response.children().length>=10){
+    		response.children().last().remove();
     	}
     	liobj.innerHTML = dice;
-    	response.append(liobj);
+    	response.prepend(liobj);
+    }
+    function addweapon(){
+    	var w = $('#weapon');
+    	var weapons = $('#weapons');
+    	var liobj = document.createElement('li');
+    	liobj.innerHTML = w.val();
+    	weapons.append(liobj);
+    }
+    function save(){
+    	var STR = Number($('#STR').val());
+    	var CON = Number($('#CON').val());
+    	var SIZ = Number($('#SIZ').val());
+    	var DEX = Number($('#DEX').val());
+    	var APP = Number($('#APP').val());
+    	var INT = Number($('#INT').val());
+    	var POW = Number($('#POW').val());
+    	var EDU = Number($('#EDU').val());
+    	var LUC = Number($('#LUC').val());
+    	var weapons = $('#weapons');
+    	var weapondata = "";
+    	for(var i=0;i<weapons.children().length;i++){
+    		if(i!=0)weapondata = weapondata + ";";
+    		var tmp = weapons.children().get(i);
+    		tmp = tmp.innerHTML;
+    		weapondata = weapondata + tmp;
+    	}
+    	stompClient.send("/savecard", {},JSON.stringify({
+    		'str':STR, 'con':CON, 'siz':SIZ, 'dex':DEX, 
+    		'app':APP, 'imt':INT, 'pow':POW, 'edu':EDU, 'luc':LUC,
+    		'weapondata':weapondata
+    	}));
+    	// 弹出保存成功的信息
     }
 </script>
 </body>

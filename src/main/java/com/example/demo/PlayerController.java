@@ -34,6 +34,12 @@ public class PlayerController {
 		// Thread.sleep(100);
 		return Dice.roll(dp.getPara(), dp.getName());
 	}
+	@MessageMapping("/game/{roomname}")
+	@SendTo("/topic/{roomname}")
+	public Dice mutiRoll(DicePara dp) throws Exception{
+		
+		return null;
+	}
 	@MessageMapping("/savecard")
 	public String save(PlCardCache pc) throws Exception{
 		PlCard plc = new PlCard(pc);

@@ -11,15 +11,15 @@ public class Dice {
 		String paras[] = parament.split(" ");
 		if(paras.length==1) {
 			String rarray = calculate(parament);
-			String result = player + "，投掷结果为" + rarray;
+			String result = player + "[" + parament + "]，投掷结果为" + rarray;
 			return new Dice(result);
 		}else {
 			int target = Integer.parseInt(paras[1]);
 			List<Integer> rarray = roll(1,100);
 			int rint = rarray.get(0);
 			String success = check(rint, target);
-			String result = player + "，投掷 " + paras[0] +
-					" 结果为" + rarray.toString() + "," + success;
+			String result = player + "，投掷 [" + parament +
+					"] 结果为" + rarray.toString() + "," + success;
 			return new Dice(result);
 		}
 	}
