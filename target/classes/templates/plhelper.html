@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>Enjoy your game!</title>
+</head>
+<body onload="disconnect()">
+<noscript><h2 style="color: #ff0000">貌似你的浏览器不支持websocket</h2></noscript>
+<div>
+    <div>
+        <button id="connect" onclick="connect();">连接</button>
+        <button id="disconnect" disabled="disabled" onclick="disconnect();">断开连接</button>
+    </div>
+    <div id="rolldiv">
+    	<label>此处掷骰</label>
+    	<button id="ro" onclick="roll();">roll点</button>
+    	<label>骰子参数</label><input type="text" id="para" />
+    	<label>输入你的名字</label><input type="text" id="name" />
+    	<ul id="dice"></ul>
+    </div>
+    <div id="makecard">
+    	<label>此处车卡，roll5选1</label>
+    	<button id="coc" onclick="coc();">roll点</button>
+    	<p id="result">此处结果\n</p>
+    </div>
+</div>
+<script th:src="@{sockjs.min.js}"></script>
+<script th:src="@{stomp.min.js}"></script>
+<script th:src="@{jquery.js}"></script>
+<script type="text/javascript">
+    var stompClient = null;
+
+    function setConnected(connected) {
+        document.getElementById('connect').disabled = connected;
+        document.getElementById('disconnect').disabled = !connected;
+        document.getElementById('rolldiv').style.visibility = connected ? 'visible' : 'hidden';
+        $('#response').html();
+    }
+	
+    function connect() {
+        var socket = new SockJS('/endpointWisely'); //1
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function(frame) {
+            setConnected(true);
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/game', function(response){
+            	getRollResult(JSON.parse(response.body).result);
+            });
+        });
+    }
+	
+	
+    function disconnect() {
+        if (stompClient != null) {
+            stompClient.disconnect();
+        }
+        setConnected(false);
+        console.log("Disconnected");
+    }
+    function roll(){
+    	var para = $('#para').val();
+    	var name = $('#name').val();
+    	stompClient.send("/roll", {},JSON.stringify({'para':para, 'name':name}));
+    }
+    function getRollResult(dice){
+    	var response = $('#dice');
+    	var liobj = document.createElement('li');
+    	if(response.children().length>=5){
+    		for(var i = 0; i < response.length; i++){
+    			response.children().remove(i);
+    		}
+    	}
+    	liobj.innerHTML = dice;
+    	response.append(liobj);
+    }
+</script>
+</body>
+</html>
